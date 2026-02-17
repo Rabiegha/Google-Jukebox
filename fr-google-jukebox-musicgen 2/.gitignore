@@ -1,0 +1,13 @@
+# Python
+*.pyc
+__pycache__/
+.venv/
+*.egg-info/
+dist/
+build/
+
+
+# All testing stuff
+*.wav
+test_api_locally.py
+jukebox_service.log
