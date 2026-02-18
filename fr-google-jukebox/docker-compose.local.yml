@@ -50,10 +50,12 @@ services:
       - SQLALCHEMY_DATABASE_URI=postgresql+asyncpg://postgres:postgres@db:5432/jukebox_db
       - LOG_LEVEL=10  # DEBUG level
       - PYTHONUNBUFFERED=1
+      - GOOGLE_APPLICATION_CREDENTIALS=/secrets/gcloud.json
     volumes:
       # Mount app directory for hot reload
       - ./app:/code/app
       - ./.env:/code/.env
+      - /Users/apple/Desktop/jukebox_local/jukebox-dev-b5e8e-firebase-adminsdk-fbsvc-7695cd6b82.json:/secrets/gcloud.json:ro
     depends_on:
       db:
         condition: service_healthy
