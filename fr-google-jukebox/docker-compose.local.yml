@@ -44,8 +44,9 @@ services:
     ports:
       - "8000:8000"
       - "5678:5678"  # Debug port (debugpy)
+    env_file:
+      - .env.local
     environment:
-      - ENV=local
       - SQLALCHEMY_DATABASE_URI=postgresql+asyncpg://postgres:postgres@db:5432/jukebox_db
       - LOG_LEVEL=10  # DEBUG level
       - PYTHONUNBUFFERED=1

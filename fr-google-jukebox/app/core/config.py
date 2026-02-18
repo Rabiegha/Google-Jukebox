@@ -7,16 +7,25 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from google.cloud import secretmanager
 
 
-def get_env_file() -> str:
+def get_env_file() -> str | None:
     """
     Determine which .env file to load based on ENV variable.
     
+    Returns None if ENV is already set (e.g., in Docker via env_file or environment)
+    to avoid conflicts with pre-loaded environment variables.
+    
+    - If ENV already in os.environ: return None (don't load file, use env vars)
     - If ENV=production: loads .env.prod (for Cloud Run secret manager setup)
     - Otherwise (local, development, etc.): loads .env.local
     
     Returns:
-        Path to the appropriate .env file
+        Path to the appropriate .env file, or None to skip file loading
     """
+    # If ENV is already set in environment, don't try to load from file
+    # This happens in Docker when env_file: or environment: is used
+    if "ENV" in os.environ:
+        return None
+        
     env = os.getenv("ENV", "local")
     return ".env.prod" if env == "production" else ".env.local"
 

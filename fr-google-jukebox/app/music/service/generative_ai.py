@@ -19,20 +19,31 @@ class GenerativeAI:
 
 class CoverGenerator(GenerativeAI):
     def __init__(self):
-        genai.configure(api_key=settings.GEMINI_API_KEY)
-        text_model = genai.GenerativeModel(
-            settings.GEMINI_MODEL,
-            generation_config=genai.GenerationConfig(
-                temperature=0,
-            ),
-        )
+        self._text_model = None
+        self._img_model = None
 
-        vertexai.init(
-            project=settings.GCLOUD_PROJECT_ID, location=settings.IMAGE_GENARATION_LOCATION
-        )
-        img_model = ImageGenerationModel.from_pretrained(settings.IMAGEN_MODEL)
+    @property
+    def text_model(self):
+        # Lazy initialization to avoid authentication issues during app startup
+        if self._text_model is None:
+            genai.configure(api_key=settings.GEMINI_API_KEY)
+            self._text_model = genai.GenerativeModel(
+                settings.GEMINI_MODEL,
+                generation_config=genai.GenerationConfig(
+                    temperature=0,
+                ),
+            )
+        return self._text_model
 
-        super().__init__(text_model=text_model, img_model=img_model)
+    @property
+    def img_model(self):
+        # Lazy initialization to avoid authentication issues during app startup
+        if self._img_model is None:
+            vertexai.init(
+                project=settings.GCLOUD_PROJECT_ID, location=settings.IMAGE_GENARATION_LOCATION
+            )
+            self._img_model = ImageGenerationModel.from_pretrained(settings.IMAGEN_MODEL)
+        return self._img_model
 
     async def generate(self, prompt: PromptCover):
         try:
@@ -96,14 +107,20 @@ class MusicGenerator(GenerativeAI):
 
 class SettingsGenerator(GenerativeAI):
     def __init__(self):
-        genai.configure(api_key=settings.GEMINI_API_KEY)
-        text_model = genai.GenerativeModel(
-            settings.GEMINI_MODEL,
-            generation_config=genai.GenerationConfig(
-                temperature=0,
-            ),
-        )
-        super().__init__(text_model=text_model)
+        self._text_model = None
+
+    @property
+    def text_model(self):
+        # Lazy initialization to avoid authentication issues during app startup
+        if self._text_model is None:
+            genai.configure(api_key=settings.GEMINI_API_KEY)
+            self._text_model = genai.GenerativeModel(
+                settings.GEMINI_MODEL,
+                generation_config=genai.GenerationConfig(
+                    temperature=0,
+                ),
+            )
+        return self._text_model
 
     def generate(self, song: str):
         try:

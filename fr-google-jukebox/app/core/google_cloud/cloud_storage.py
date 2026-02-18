@@ -3,7 +3,15 @@ from google.cloud.storage import Client
 
 class CloudStorageService:
     def __init__(self):
-        self.client = Client(project="dgc-ai-jukebox")
+        self._client = None
+
+    @property
+    def client(self) -> Client:
+        # Lazy initialization to avoid requiring Google Cloud credentials
+        # until an actual operation is performed
+        if self._client is None:
+            self._client = Client(project="dgc-ai-jukebox")
+        return self._client
 
     def delete_file(self, bucket_name, file_name):
         bucket = self.client.bucket(bucket_name)

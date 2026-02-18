@@ -9,11 +9,19 @@ from app.core.config import settings
 
 class Firestore(metaclass=Singleton):
     def __init__(self) -> None:
-        # Searches first from .env, or infer if not specified
-        if settings.GCLOUD_PROJECT_ID:
-            self.client = firestore.AsyncClient(project=settings.GCLOUD_PROJECT_ID)
-        else:
-            self.client = firestore.AsyncClient()
+        self._client = None
+
+    @property
+    def client(self) -> firestore.AsyncClient:
+        # Lazy initialization of the Firestore client
+        # This allows the app to start without requiring Google Cloud credentials
+        # until a Firestore operation is actually performed
+        if self._client is None:
+            if settings.GCLOUD_PROJECT_ID:
+                self._client = firestore.AsyncClient(project=settings.GCLOUD_PROJECT_ID)
+            else:
+                self._client = firestore.AsyncClient()
+        return self._client
 
     async def get_all_documents(self, collection_name: str, as_dict=True) -> list[dict]:
         doc_list = await self.client.collection(collection_name).get()
