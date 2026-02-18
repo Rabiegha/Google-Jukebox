@@ -40,6 +40,7 @@ vertexai = "^1.60.0"
 sendgrid = "^6.11.0"
 google-cloud-secret-manager = "^2.20.2"
 google-cloud-storage = "^2.18.2"
+replicate = "^0.25.0"
 
 [tool.poetry.dev-dependencies]
 black = "^22.3"

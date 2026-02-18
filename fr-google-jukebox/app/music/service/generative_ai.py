@@ -1,6 +1,8 @@
 import google.generativeai as genai
 import requests
 import vertexai
+import replicate
+import io
 
 from vertexai.preview.vision_models import ImageGenerationModel
 
@@ -87,19 +89,26 @@ class MusicGenerator(GenerativeAI):
 
     async def generate(self, prompt: PromptMusic):
         try:
+            # Configure Replicate with API token
+            replicate.api.token = settings.REPLICATE_API_TOKEN
 
-            external_api_url = f"{settings.MUSICGEN_URL}/generate_audio"
+            # Use Replicate MusicGen model
+            output = replicate.run(
+                "meta/musicgen:7a76a8258b23fae65c5a22dffe921f0c82ad91601110ab53f91de89a56e8e679",
+                input={
+                    "prompt": prompt.prompt,
+                    "duration": prompt.duration,
+                },
+            )
 
-            musigen_request = {
-                "prompt": prompt.prompt,
-                "duration": prompt.duration,
-                "uuid": prompt.uuid,
-            }
+            # output is a URL to the generated audio file
+            # Download it and yield as chunks
+            response = requests.get(output, stream=True)
+            response.raise_for_status()
 
-            with requests.get(external_api_url, params=musigen_request, stream=True) as request:
-                for chunk in request.iter_content(1024):
-                    if chunk:
-                        yield chunk
+            for chunk in response.iter_content(chunk_size=1024):
+                if chunk:
+                    yield chunk
 
         except Exception as e:
             raise e
