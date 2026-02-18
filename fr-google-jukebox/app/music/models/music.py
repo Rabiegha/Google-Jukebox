@@ -35,7 +35,7 @@ class MusicRead(MusicBase):
 
 
 class MusicCreate(MusicBase):
-    pass
+    id: str = None  # Optional ID for local testing
 
 
 class MusicUpdate(MusicBase):

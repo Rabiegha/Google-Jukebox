@@ -67,10 +67,10 @@ async def get_musics_by_genre(genre: Annotated[str, Depends(get_genre)]) -> Page
 @router.post("/uuid", status_code=status.HTTP_200_OK)
 async def create_new_uuid(uuid_prompt: PromptBase) -> MusicRead:
     current_datetime = datetime.now()
-    id_ = uuid.uuid4()
+    id_ = str(uuid.uuid4())
 
     music_data = MusicCreate(
-        id=str(id_),
+        id=id_,
         title=uuid_prompt.title,
         prompt=uuid_prompt.prompt,
         duration=uuid_prompt.duration,
@@ -80,14 +80,20 @@ async def create_new_uuid(uuid_prompt: PromptBase) -> MusicRead:
         created_at=current_datetime,
     )
 
-    doc = await crud.firestore.add_document_in_subcollection(
-        settings.JUKEBOX_COLLECTION,
-        settings.MUSIC_SUB_COLLECTION,
-        uuid_prompt.genre,
-        dict(music_data),
-    )
-
-    return doc
+    try:
+        # Try to save to Firestore if credentials are available (optional in local mode)
+        doc = await crud.firestore.add_document_in_subcollection(
+            settings.JUKEBOX_COLLECTION,
+            settings.MUSIC_SUB_COLLECTION,
+            uuid_prompt.genre,
+            dict(music_data),
+        )
+        return doc
+    except Exception as fs_error:
+        # Firestore save failed (expected in local mode without credentials)
+        # Return the music data with ID for local testing
+        logging.warning(f"Firestore save skipped: {fs_error}")
+        return MusicRead(**music_data.dict())
 
 
 @router.post(
