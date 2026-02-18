@@ -1,0 +1,50 @@
+version: "3.10"
+
+services:
+  # PostgreSQL database for production
+  db:
+    container_name: "jukebox_db_prod"
+    image: postgres:13.4
+    restart: always
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-jukebox_db}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - jukebox-network
+
+  # PostgreSQL database for testing
+  db_test:
+    container_name: "jukebox_db_test_prod"
+    image: postgres:13.4
+    restart: always
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB_TEST:-jukebox_db_test}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - jukebox-network
+
+volumes:
+  pgdata_prod:
+    driver: local
+
+networks:
+  jukebox-network:
+    driver: bridge

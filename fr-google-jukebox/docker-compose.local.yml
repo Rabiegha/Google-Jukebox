@@ -1,0 +1,80 @@
+version: "3.10"
+
+services:
+  # PostgreSQL database for development
+  db:
+    container_name: "jukebox_db_local"
+    image: postgres:13.4
+    volumes:
+      - ./pgdata_local:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: "jukebox_db"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL database for testing
+  db_test:
+    container_name: "jukebox_db_test_local"
+    image: postgres:13.4
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: "jukebox_db_test"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Backend
+  backend:
+    container_name: "jukebox_backend_local"
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+    ports:
+      - "8000:8000"
+      - "5678:5678"  # Debug port (debugpy)
+    environment:
+      - ENV=local
+      - SQLALCHEMY_DATABASE_URI=postgresql+asyncpg://postgres:postgres@db:5432/jukebox_db
+      - LOG_LEVEL=10  # DEBUG level
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Mount app directory for hot reload
+      - ./app:/code/app
+      - ./.env:/code/.env
+    depends_on:
+      db:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/docs"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Optional: PgAdmin for database management (useful for debugging)
+  pgadmin:
+    container_name: "pgadmin_local"
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@local.dev
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+
+volumes:
+  pgdata_local:
+    driver: local

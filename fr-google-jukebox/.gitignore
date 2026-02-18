@@ -21,7 +21,12 @@ coverage.xml
 cover/
 
 # Environments
+# .env files are local/per-developer and should NEVER be committed
+# Use .env.example as a template instead
 .env
+.env.local
+.env.prod
+.env.*.local
 .venv
 env/
 venv/

@@ -1,24 +1,40 @@
+# Default compose file for production/staging environments
+# For local development, use: docker-compose -f docker-compose.local.yml
+# For production with custom config, use: docker-compose -f docker-compose.prod.yml
+
 version: "3.10"
 
 services:
   db:
     container_name: "jukebox_db"
     image: postgres:13.4
+    restart: always
     volumes:
       - .pgdata:/var/lib/postgresql/data
     ports:
-      - 5434:5432
+      - "5434:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: "jukebox_db"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   db_test:
     container_name: "jukebox_db_test"
     image: postgres:13.4
+    restart: always
     ports:
-      - 5435:5432
+      - "5435:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: "jukebox_db_test"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
