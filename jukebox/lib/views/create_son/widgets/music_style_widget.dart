@@ -25,7 +25,11 @@ class _MusicStyleWidgetState extends State<MusicStyleWidget> {
   void initState() {
     super.initState();
     _categoryCubit = context.read<CategoryCubit>();
-    categories = (_categoryCubit.state as CategoryGetSuccess).categories;
+    if (_categoryCubit.state is CategoryGetSuccess) {
+      categories = (_categoryCubit.state as CategoryGetSuccess).categories;
+    } else {
+      categories = [];
+    }
   }
 
   @override

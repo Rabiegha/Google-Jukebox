@@ -37,8 +37,13 @@ music_generator = MusicGenerator()
     status_code=status.HTTP_200_OK,
 )
 async def get_all_genres() -> Page[GenreBase]:
-    genres = await crud.firestore.get_all_documents(settings.JUKEBOX_COLLECTION)
-    return Page(items=genres, total=len(genres))
+    try:
+        genres = await crud.firestore.get_all_documents(settings.JUKEBOX_COLLECTION)
+        return Page(items=genres, total=len(genres))
+    except Exception as e:
+        logging.warning(f"Firestore genres fetch failed: {e}")
+        # Return empty list as fallback for local testing
+        return Page(items=[], total=0)
 
 
 @router.get(
@@ -47,8 +52,13 @@ async def get_all_genres() -> Page[GenreBase]:
     status_code=status.HTTP_200_OK,
 )
 async def get_all_instruments() -> Page[InstrumentBase]:
-    instruments = await crud.firestore.get_all_documents(settings.INSTRUMENTS_COLLECTION)
-    return Page(items=instruments, total=len(instruments))
+    try:
+        instruments = await crud.firestore.get_all_documents(settings.INSTRUMENTS_COLLECTION)
+        return Page(items=instruments, total=len(instruments))
+    except Exception as e:
+        logging.warning(f"Firestore instruments fetch failed: {e}")
+        # Return empty list as fallback for local testing
+        return Page(items=[], total=0)
 
 
 @router.get(
@@ -57,11 +67,15 @@ async def get_all_instruments() -> Page[InstrumentBase]:
     status_code=status.HTTP_200_OK,
 )
 async def get_musics_by_genre(genre: Annotated[str, Depends(get_genre)]) -> Page[MusicRead]:
-    musics = await crud.firestore.get_all_documents_in_subcollection(
-        settings.JUKEBOX_COLLECTION, settings.MUSIC_SUB_COLLECTION, genre
-    )
-
-    return Page(items=musics, total=len(musics))
+    try:
+        musics = await crud.firestore.get_all_documents_in_subcollection(
+            settings.JUKEBOX_COLLECTION, settings.MUSIC_SUB_COLLECTION, genre
+        )
+        return Page(items=musics, total=len(musics))
+    except Exception as e:
+        logging.warning(f"Firestore musics by genre fetch failed: {e}")
+        # Return empty list as fallback for local testing
+        return Page(items=[], total=0)
 
 
 @router.post("/uuid", status_code=status.HTTP_200_OK)
