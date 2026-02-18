@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:dio/dio.dart';
+import 'package:jukebox/config/app_config.dart';
 
 class SongRepository {
   SongRepository()
       : _dio = Dio(
           BaseOptions(
-            baseUrl: 'https://jukebox-1048249386206.europe-west1.run.app/api/',
-            // baseUrl: 'https://integral-barely-ladybug.ngrok-free.app/api/',
+            baseUrl: AppConfig.apiBaseUrl,
           ),
         );
 

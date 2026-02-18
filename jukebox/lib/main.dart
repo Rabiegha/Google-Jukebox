@@ -3,9 +3,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:jukebox/blocs/category_cubit/category_cubit.dart';
 import 'package:jukebox/blocs/player_cubit/player_cubit.dart';
 import 'package:jukebox/blocs/song_cubit/song_cubit.dart';
+import 'package:jukebox/config/app_config.dart';
 import 'package:jukebox/views/home/home_view.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize app configuration (load .env file)
+  // Use 'local' for development, 'prod' for production
+  await AppConfig.init(env: 'local');
+  
   runApp(const MyApp());
 }
 
