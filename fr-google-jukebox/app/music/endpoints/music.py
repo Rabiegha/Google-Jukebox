@@ -207,31 +207,37 @@ async def generate_music(
     },
 )
 async def generate_music_stream(
-    uuid: str, genre: Annotated[str, Depends(get_genre)], title: str, prompt: str, duration: int
+    uuid: str, genre: Annotated[str, Depends(get_genre)], title: str, prompt: str, duration: int, creator: str = "Unknown"
 ) -> StreamingResponse:
 
     generation_prompt = PromptMusic(
-        uuid=uuid, genre=genre, title=title, prompt=prompt, duration=duration
+        uuid=uuid, genre=genre, title=title, prompt=prompt, duration=duration, creator=creator
     )
 
     storage_uri = f"https://storage.googleapis.com/{settings.GCLOUD_MUSIC_BUCKET}/{generation_prompt.uuid}/output.wav"
 
-    id_ = generation_prompt.uuid
-    firestore_object: MusicUpdate = await crud.firestore.get_document_in_subcollection(
-        settings.JUKEBOX_COLLECTION, settings.MUSIC_SUB_COLLECTION, generation_prompt.genre, id_
-    )
+    try:
+        # Try to update Firestore if credentials are available (optional in local mode)
+        id_ = generation_prompt.uuid
+        firestore_object: MusicUpdate = await crud.firestore.get_document_in_subcollection(
+            settings.JUKEBOX_COLLECTION, settings.MUSIC_SUB_COLLECTION, generation_prompt.genre, id_
+        )
 
-    firestore_object["duration"] = generation_prompt.duration
-    firestore_object["audio"] = storage_uri
-    firestore_object["updated_at"] = datetime.now()
+        firestore_object["duration"] = generation_prompt.duration
+        firestore_object["audio"] = storage_uri
+        firestore_object["updated_at"] = datetime.now()
 
-    await crud.firestore.update_document_in_subcollection(
-        settings.JUKEBOX_COLLECTION,
-        settings.MUSIC_SUB_COLLECTION,
-        generation_prompt.genre,
-        id_,
-        dict(firestore_object),
-    )
+        await crud.firestore.update_document_in_subcollection(
+            settings.JUKEBOX_COLLECTION,
+            settings.MUSIC_SUB_COLLECTION,
+            generation_prompt.genre,
+            id_,
+            dict(firestore_object),
+        )
+    except Exception as fs_error:
+        # Firestore update failed (expected in local mode without credentials)
+        # Continue with music generation anyway
+        logging.warning(f"Firestore update skipped: {fs_error}")
 
     try:
 
