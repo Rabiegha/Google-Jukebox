@@ -18,15 +18,15 @@ class PlayerCubit extends Cubit<PlayerState> {
 
   Future<void> play(SongModel song) async {
     try {
-      // await audioPlayer.setUrl(song.audio);
-
-      // audioPlayer.setAudioSource(audioSource!);
-
       _currentIndex = playlist.indexWhere((item) => item == song.audio);
-      print("#####");
-      print(_currentIndex);
-      print("#####");
-      audioPlayer.seek(Duration.zero, index: _currentIndex);
+
+      if (_currentIndex < 0) {
+        // Song not in current playlist — play it directly by URL
+        await audioPlayer.setUrl(song.audio);
+        _currentIndex = 0;
+      } else {
+        audioPlayer.seek(Duration.zero, index: _currentIndex);
+      }
 
       actifSong.value = song;
       audioPlayer.play();

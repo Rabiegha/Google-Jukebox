@@ -60,14 +60,13 @@ OverlayEntry listenMusicPopup(SongModel song) {
                       CupertinoButton(
                         padding: EdgeInsets.zero,
                         onPressed: () async {
-                          homeContext.read<SongCubit>().getSongsByGenre(
+                          // Wait for playlist to be fully loaded before playing
+                          await homeContext.read<SongCubit>().getSongsByGenre(
                                 song.genre,
                                 homeContext.read<CategoryCubit>(),
                                 homeContext,
                                 activeSong: false,
                               );
-
-                          // homeContext.read<PlayerCubit>().audioPlayer.pl
 
                           await homeContext.read<PlayerCubit>().play(song);
 

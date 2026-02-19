@@ -28,6 +28,15 @@ class _ListenSongWidgetState extends State<ListenSongWidget> {
   late final PlayerCubit _playerCubit;
   late TextEditingController emailCtrl;
 
+  static const _defaultCover =
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/1200px-Placeholder_view_vector.svg.png';
+
+  String _getCover() {
+    final song = _playerCubit.actifSong.value ?? widget.song;
+    if (song.cover.isEmpty || song.cover == 'default_cover') return _defaultCover;
+    return song.cover;
+  }
+
   @override
   void initState() {
     _playerCubit = context.read<PlayerCubit>();
@@ -96,7 +105,7 @@ class _ListenSongWidgetState extends State<ListenSongWidget> {
                         image: DecorationImage(
                           fit: BoxFit.cover,
                           image: NetworkImage(
-                            _playerCubit.actifSong.value!.cover,
+                            _getCover(),
                           ),
                         ),
                       ),
@@ -162,7 +171,7 @@ class _ListenSongWidgetState extends State<ListenSongWidget> {
                                         image: DecorationImage(
                                           fit: BoxFit.cover,
                                           image: NetworkImage(
-                                            _playerCubit.actifSong.value!.cover,
+                                            _getCover(),
                                           ),
                                         ),
                                       ),
@@ -208,7 +217,7 @@ class _ListenSongWidgetState extends State<ListenSongWidget> {
                                       ),
                                     ),
                                     Text(
-                                      'By ${_playerCubit.actifSong.value!.creator}',
+                                      'By ${(_playerCubit.actifSong.value ?? widget.song).creator}',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white.withOpacity(0.5),
@@ -217,7 +226,7 @@ class _ListenSongWidgetState extends State<ListenSongWidget> {
                                     ),
                                     const SizedBox(height: 10),
                                     Text(
-                                      _playerCubit.actifSong.value!.title,
+                                      (_playerCubit.actifSong.value ?? widget.song).title,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 25,
@@ -226,7 +235,7 @@ class _ListenSongWidgetState extends State<ListenSongWidget> {
                                     ),
                                     const SizedBox(height: 10),
                                     Text(
-                                      _playerCubit.actifSong.value!.genre,
+                                      (_playerCubit.actifSong.value ?? widget.song).genre,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white,
