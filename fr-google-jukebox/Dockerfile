@@ -3,7 +3,7 @@ LABEL MAINTAINER="fr.dgc.ops.dgtl@devoteamgcloud.com"
 
 WORKDIR /tmp
 
-RUN pip install poetry
+RUN pip install poetry poetry-plugin-export
 
 COPY ./pyproject.toml ./poetry.lock* /tmp/
 

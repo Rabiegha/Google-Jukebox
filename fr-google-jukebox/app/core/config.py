@@ -30,7 +30,7 @@ def get_env_file() -> str | None:
     return ".env.prod" if env == "production" else ".env.local"
 
 
-def get_secret(secret_key: str) -> str:
+def get_secret(secret_key: str, required: bool = True) -> str:
     """
     Retrieve secret from Google Secret Manager or environment variables.
     
@@ -39,13 +39,10 @@ def get_secret(secret_key: str) -> str:
     
     Args:
         secret_key: The name of the secret (e.g., "GEMINI_API_KEY")
+        required: If False, returns empty string instead of raising on missing secret
         
     Returns:
         The secret value as a string
-        
-    Raises:
-        ValueError: If in local mode and the secret is not found in env vars
-        Exception: If in production mode and Secret Manager call fails
     """
     env_mode = os.getenv("ENV", "local")
     
@@ -53,6 +50,8 @@ def get_secret(secret_key: str) -> str:
     if env_mode != "production":
         value = os.getenv(secret_key)
         if not value:
+            if not required:
+                return ""
             raise ValueError(
                 f"Secret '{secret_key}' not found in environment variables. "
                 f"Please add it to .env file (ENV={env_mode})"
@@ -75,6 +74,9 @@ def get_secret(secret_key: str) -> str:
         )
         return secret_value.payload.data.decode("UTF-8")
     except Exception as e:
+        if not required:
+            logging.warning(f"Optional secret '{secret_key}' not available: {e}")
+            return ""
         raise RuntimeError(
             f"Failed to retrieve secret '{secret_key}' from Google Secret Manager: {e}"
         ) from e
@@ -123,9 +125,9 @@ class Settings(BaseSettings):
     # External services
     MUSICGEN_URL: str = Field(default="", env="MUSICGEN_URL")
 
-    # Email service
+    # Email service (optional)
     GOOGLE_APP_EMAIL: str = Field(default="", env="GOOGLE_APP_EMAIL")
-    GOOGLE_APP_PASSWORD: str = Field(default_factory=lambda: get_secret("GOOGLE_APP_PASSWORD"))
+    GOOGLE_APP_PASSWORD: str = Field(default_factory=lambda: get_secret("GOOGLE_APP_PASSWORD", required=False))
 
     # Firestore collections
     INSTRUMENTS_COLLECTION: str = Field(default="instrument", env="INSTRUMENTS_COLLECTION")

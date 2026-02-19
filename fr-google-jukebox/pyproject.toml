@@ -42,7 +42,7 @@ google-cloud-secret-manager = "^2.20.2"
 google-cloud-storage = "^2.18.2"
 replicate = "^0.25.0"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 black = "^22.3"
 flake8 = "^4.0.1"
 isort = "^5.13.2"
