@@ -101,6 +101,7 @@ class MusicGenerator(GenerativeAI):
                 input={
                     "prompt": prompt.prompt,
                     "duration": prompt.duration,
+                    "model_version": "stereo-large",
                 },
             )
 
