@@ -85,19 +85,23 @@ class CoverGenerator(GenerativeAI):
 
 class MusicGenerator(GenerativeAI):
     def __init__(self):
-        pass
+        self._client = None
+
+    @property
+    def client(self):
+        if self._client is None:
+            self._client = replicate.Client(api_token=settings.REPLICATE_API_TOKEN)
+        return self._client
 
     async def generate(self, prompt: PromptMusic):
         try:
             # Use Replicate MusicGen model
-            # Token is passed as parameter, not via module attribute
-            output = replicate.run(
-                "meta/musicgen:7a76a8258b23fae65c5a22dffe921f0c82ad91601110ab53f91de89a56e8e679",
+            output = self.client.run(
+                "meta/musicgen:671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb",
                 input={
                     "prompt": prompt.prompt,
                     "duration": prompt.duration,
                 },
-                api_token=settings.REPLICATE_API_TOKEN
             )
 
             # output is a URL to the generated audio file

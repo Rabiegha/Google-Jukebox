@@ -30,40 +30,46 @@ class SongCubit extends Cubit<SongState> {
     bool activeSong = true,
   }) async {
     emit(SongGetByGenreLoading());
-    final List<SongModel> songs = [];
-    final List<String> playList = [];
-    // final data = await _songRepository.getSongsByGenre(genre);
-    final data = categoryCubit.songListData[genre];
+    try {
+      final List<SongModel> songs = [];
+      final List<String> playList = [];
+      final data = categoryCubit.songListData[genre];
 
-    for (final songData in data) {
-      final song = SongModel.fromMap(songData);
-      // Skip incomplete songs (failed generation)
-      if (song.audio == 'default_audio' || song.audio.isEmpty) continue;
-      songs.add(song);
-      playList.add(song.audio);
-    }
+      if (data != null) {
+        for (final songData in data) {
+          final song = SongModel.fromMap(songData);
+          // Skip incomplete songs (failed generation)
+          if (song.audio == 'default_audio' || song.audio.isEmpty) continue;
+          songs.add(song);
+          playList.add(song.audio);
+        }
+      }
 
-    if (songs.isEmpty) {
-      context.read<PlayerCubit>().playlist = [];
-      context.read<PlayerCubit>().songList = [];
+      if (songs.isEmpty) {
+        context.read<PlayerCubit>().playlist = [];
+        context.read<PlayerCubit>().songList = [];
+        emit(SongGetByGenreSuccess(songs: songs, genre: genre));
+        return;
+      }
+
+      final audioSource = ConcatenatingAudioSource(
+        children:
+            playList.map((item) => AudioSource.uri(Uri.parse(item))).toList(),
+      );
+
+      context.read<PlayerCubit>().audioPlayer.setAudioSource(audioSource);
+      context.read<PlayerCubit>().playlist = playList;
+      context.read<PlayerCubit>().songList = songs;
+
+      if (activeSong) {
+        context.read<PlayerCubit>().actifSong.value = songs[0];
+      }
+
       emit(SongGetByGenreSuccess(songs: songs, genre: genre));
-      return;
+    } catch (e) {
+      inspect(e);
+      emit(SongGetByGenreSuccess(songs: [], genre: genre));
     }
-
-    final audioSource = ConcatenatingAudioSource(
-      children:
-          playList.map((item) => AudioSource.uri(Uri.parse(item))).toList(),
-    );
-
-    context.read<PlayerCubit>().audioPlayer.setAudioSource(audioSource);
-    context.read<PlayerCubit>().playlist = playList;
-    context.read<PlayerCubit>().songList = songs;
-
-    if (activeSong) {
-      context.read<PlayerCubit>().actifSong.value = songs[0];
-    }
-
-    emit(SongGetByGenreSuccess(songs: songs, genre: genre));
   }
 
   getSettings(String song) async {
@@ -175,17 +181,25 @@ void createSong(
       }),
     );
 
-    final coverResponse = await dio.post(
-      'music/cover',
-      data: jsonEncode({
-        'uuid': response.data['id'],
-        'title': params['title'],
-        'prompt': prompt,
-        'duration': 30,
-        "creator": pseudo,
-        'genre': params['genre'],
-      }),
-    );
+    // Try cover generation, but continue even if it fails
+    String cover = 'default_cover';
+    try {
+      final coverResponse = await dio.post(
+        'music/cover',
+        data: jsonEncode({
+          'uuid': response.data['id'],
+          'title': params['title'],
+          'prompt': prompt,
+          'duration': 30,
+          "creator": pseudo,
+          'genre': params['genre'],
+        }),
+      );
+      cover = coverResponse.data['cover'] ?? 'default_cover';
+    } catch (coverError) {
+      // Cover generation failed (quota, etc.) - continue with default cover
+      inspect(coverError);
+    }
 
     final songResponse = await dio.get(
       'music/song',
@@ -205,7 +219,7 @@ void createSong(
       'audio': songResponse.data['audio'],
       'creator': songResponse.data['creator'],
       'id': songResponse.data['id'],
-      'cover': coverResponse.data['cover'],
+      'cover': cover,
       'duration': 30,
     });
   } catch (e) {
