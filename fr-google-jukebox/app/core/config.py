@@ -129,7 +129,8 @@ class Settings(BaseSettings):
     GOOGLE_APP_EMAIL: str = Field(default="", env="GOOGLE_APP_EMAIL")
     GOOGLE_APP_PASSWORD: str = Field(default_factory=lambda: get_secret("GOOGLE_APP_PASSWORD", required=False))
 
-    # Firestore collections
+    # Firestore
+    FIRESTORE_DATABASE: str = Field(default="(default)", env="FIRESTORE_DATABASE")
     INSTRUMENTS_COLLECTION: str = Field(default="instrument", env="INSTRUMENTS_COLLECTION")
     JUKEBOX_COLLECTION: str = Field(default="jukebox", env="JUKEBOX_COLLECTION")
     MUSIC_SUB_COLLECTION: str = Field(default="musics", env="MUSIC_SUB_COLLECTION")
