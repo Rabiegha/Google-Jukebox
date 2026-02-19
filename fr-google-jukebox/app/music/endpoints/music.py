@@ -197,7 +197,15 @@ async def generate_music(
         async for chunk in music_generator.generate(generation_prompt):
             buffer.write(chunk)
 
-        background_tasks.add_task(buffer.close)
+        # Upload the generated WAV to GCS
+        buffer.seek(0)
+        destination_blob = f"{generation_prompt.uuid}/output.wav"
+        cloud_storage_service.upload_file(
+            settings.GCLOUD_MUSIC_BUCKET,
+            destination_blob,
+            buffer.read(),
+            content_type="audio/wav",
+        )
 
         return JSONResponse(
             content={

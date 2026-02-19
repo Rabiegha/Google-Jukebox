@@ -115,7 +115,7 @@ class Settings(BaseSettings):
 
     # AI/ML Models
     IMAGE_GENARATION_LOCATION: str = Field(default="us-central1", env="IMAGE_GENERATION_LOCATION")
-    GEMINI_MODEL: str = Field(default="gemini-1.5-flash", env="GEMINI_MODEL")
+    GEMINI_MODEL: str = Field(default="gemini-2.0-flash", env="GEMINI_MODEL")
     IMAGEN_MODEL: str = Field(default="imagen-3.0-generate-001", env="IMAGEN_MODEL")
 
     # API Keys (secrets)

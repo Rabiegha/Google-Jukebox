@@ -36,8 +36,18 @@ class SongCubit extends Cubit<SongState> {
     final data = categoryCubit.songListData[genre];
 
     for (final songData in data) {
-      songs.add(SongModel.fromMap(songData));
-      playList.add(SongModel.fromMap(songData).audio);
+      final song = SongModel.fromMap(songData);
+      // Skip incomplete songs (failed generation)
+      if (song.audio == 'default_audio' || song.audio.isEmpty) continue;
+      songs.add(song);
+      playList.add(song.audio);
+    }
+
+    if (songs.isEmpty) {
+      context.read<PlayerCubit>().playlist = [];
+      context.read<PlayerCubit>().songList = [];
+      emit(SongGetByGenreSuccess(songs: songs, genre: genre));
+      return;
     }
 
     final audioSource = ConcatenatingAudioSource(
@@ -46,7 +56,6 @@ class SongCubit extends Cubit<SongState> {
     );
 
     context.read<PlayerCubit>().audioPlayer.setAudioSource(audioSource);
-    // context.read<PlayerCubit>().audioSource = audioSource;
     context.read<PlayerCubit>().playlist = playList;
     context.read<PlayerCubit>().songList = songs;
 

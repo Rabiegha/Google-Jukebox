@@ -20,6 +20,12 @@ class CloudStorageService:
         blob = bucket.blob(file_name)
         blob.delete()
 
+    def upload_file(self, bucket_name, destination_blob_name, data, content_type="audio/wav"):
+        bucket = self.client.bucket(bucket_name)
+        blob = bucket.blob(destination_blob_name)
+        blob.upload_from_string(data, content_type=content_type)
+        return f"https://storage.googleapis.com/{bucket_name}/{destination_blob_name}"
+
     def delete_folder(self, bucket_name, folder_name):
         bucket = self.client.bucket(bucket_name)
         for blob in bucket.list_blobs(prefix=folder_name):
