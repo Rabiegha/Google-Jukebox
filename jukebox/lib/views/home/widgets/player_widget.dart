@@ -24,10 +24,14 @@ class _PlayerWidgetState extends State<PlayerWidget>
   late AnimationController _controller;
 
   _getCoverImage(PlayerState state) {
-    if (state is AudioPlayerPlaying ||
-        state is AudioPlayerPaused ||
-        state is AudioPlayerEnd) {
-      return _playerCubit.actifSong.value!.cover;
+    if ((state is AudioPlayerPlaying ||
+            state is AudioPlayerPaused ||
+            state is AudioPlayerEnd) &&
+        _playerCubit.actifSong.value != null) {
+      final cover = _playerCubit.actifSong.value!.cover;
+      if (cover != 'default_cover' && cover.isNotEmpty) {
+        return cover;
+      }
     }
     return 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/1200px-Placeholder_view_vector.svg.png';
   }
@@ -152,8 +156,9 @@ class _PlayerWidgetState extends State<PlayerWidget>
                           builder: (context, child) {
                             if (state is AudioPlayerPlaying) {
                               _controller.repeat();
-                            } else if (state is! AudioPlayerInitial) {
+                            } else {
                               _controller.stop();
+                              _controller.reset();
                             }
                             return Transform.rotate(
                               angle: _controller.value * 2.0 * math.pi,
