@@ -1,6 +1,9 @@
 from io import BytesIO
 import logging
+import math
+import struct
 import time
+import wave
 from typing import Annotated
 import uuid
 from datetime import datetime
@@ -124,8 +127,14 @@ async def generate_cover(cover_prompt: PromptCover) -> MusicCreate:
             cover_prompt.uuid,
         )
 
+        # TODO: Re-enable AI cover generation when Gemini quota/billing is active
+        # For now, use a placeholder cover image
         start_time = time.time()
-        cover_response = await cover_generator.generate(cover_prompt)
+        try:
+            cover_response = await cover_generator.generate(cover_prompt)
+        except Exception as ai_err:
+            logging.warning(f"AI cover generation failed (using placeholder): {ai_err}")
+            cover_response = "https://placehold.co/400x400/1a1a2e/e94560?text=" + cover_prompt.title.replace(' ', '+')
         end_time = time.time()
 
         print(f"Cover generation: {end_time - start_time} seconds")
@@ -194,10 +203,32 @@ async def generate_music(
     buffer = BytesIO()
 
     try:
-        async for chunk in music_generator.generate(generation_prompt):
-            buffer.write(chunk)
+        try:
+            async for chunk in music_generator.generate(generation_prompt):
+                buffer.write(chunk)
+        except Exception as ai_err:
+            # TODO: Re-enable when Replicate credits are available
+            logging.warning(f"AI music generation failed (using test tone): {ai_err}")
+            buffer = BytesIO()
+            # Generate a simple test WAV tone
+            sample_rate = 44100
+            duration_secs = generation_prompt.duration
+            frequency = 440.0  # A4 note
+            num_samples = sample_rate * duration_secs
+            wav_buffer = BytesIO()
+            with wave.open(wav_buffer, 'w') as wav_file:
+                wav_file.setnchannels(1)
+                wav_file.setsampwidth(2)
+                wav_file.setframerate(sample_rate)
+                for i in range(num_samples):
+                    # Simple sine wave with fade in/out
+                    t = i / sample_rate
+                    fade = min(1.0, i / (sample_rate * 0.1), (num_samples - i) / (sample_rate * 0.1))
+                    value = int(16000 * fade * math.sin(2 * math.pi * frequency * t))
+                    wav_file.writeframes(struct.pack('<h', value))
+            buffer = wav_buffer
 
-        # Upload the generated WAV to GCS
+        # Upload the WAV to GCS
         buffer.seek(0)
         destination_blob = f"{generation_prompt.uuid}/output.wav"
         cloud_storage_service.upload_file(
@@ -214,7 +245,7 @@ async def generate_music(
                 "title": title,
                 "creator": creator,
                 "audio": storage_uri,
-                "duration": 30,
+                "duration": generation_prompt.duration,
             },
         )
 
