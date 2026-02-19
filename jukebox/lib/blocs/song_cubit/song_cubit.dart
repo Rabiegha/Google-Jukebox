@@ -31,6 +31,10 @@ class SongCubit extends Cubit<SongState> {
   }) async {
     emit(SongGetByGenreLoading());
     try {
+      // Stop any currently playing audio when switching categories
+      final playerCubit = context.read<PlayerCubit>();
+      await playerCubit.stop();
+
       final List<SongModel> songs = [];
       final List<String> playList = [];
       final data = categoryCubit.songListData[genre];
@@ -46,8 +50,9 @@ class SongCubit extends Cubit<SongState> {
       }
 
       if (songs.isEmpty) {
-        context.read<PlayerCubit>().playlist = [];
-        context.read<PlayerCubit>().songList = [];
+        playerCubit.playlist = [];
+        playerCubit.songList = [];
+        playerCubit.actifSong.value = null;
         emit(SongGetByGenreSuccess(songs: songs, genre: genre));
         return;
       }
@@ -58,11 +63,11 @@ class SongCubit extends Cubit<SongState> {
       );
 
       context.read<PlayerCubit>().audioPlayer.setAudioSource(audioSource);
-      context.read<PlayerCubit>().playlist = playList;
-      context.read<PlayerCubit>().songList = songs;
+      playerCubit.playlist = playList;
+      playerCubit.songList = songs;
 
       if (activeSong) {
-        context.read<PlayerCubit>().actifSong.value = songs[0];
+        playerCubit.actifSong.value = songs[0];
       }
 
       emit(SongGetByGenreSuccess(songs: songs, genre: genre));

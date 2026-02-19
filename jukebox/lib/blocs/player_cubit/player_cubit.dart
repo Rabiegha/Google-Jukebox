@@ -53,6 +53,13 @@ class PlayerCubit extends Cubit<PlayerState> {
     emit(AudioPlayerEnd());
   }
 
+  /// Stop playback and reset state (e.g. when switching categories)
+  Future<void> stop() async {
+    await audioPlayer.stop();
+    _currentIndex = 0;
+    emit(AudioPlayerInitial());
+  }
+
   void next() {
     if (_currentIndex < songList.length - 1) {
       _currentIndex += 1;
