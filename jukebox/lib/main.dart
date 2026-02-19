@@ -11,7 +11,7 @@ void main() async {
   
   // Initialize app configuration (load .env file)
   // Use 'local' for development, 'prod' for production
-  await AppConfig.init(env: 'local');
+  await AppConfig.init(env: 'prod');
   
   runApp(const MyApp());
 }
