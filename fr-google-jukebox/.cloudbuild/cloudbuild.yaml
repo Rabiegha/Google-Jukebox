@@ -1,14 +1,13 @@
 steps:
   - id: build
     name: gcr.io/cloud-builders/docker
-    dir: fr-google-jukebox
     args:
       - build
       - -t
       - europe-docker.pkg.dev/$PROJECT_ID/$_REPO/$_SERVICE
       - -f
-      - Dockerfile
-      - .
+      - fr-google-jukebox/Dockerfile
+      - fr-google-jukebox
 
   - id: push
     name: gcr.io/cloud-builders/docker
