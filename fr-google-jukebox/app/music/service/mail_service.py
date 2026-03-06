@@ -1,22 +1,26 @@
+import logging
+import smtplib
+import ssl
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
 from app.music.models.mail import MailRequest
 from app.core.config import settings
-
 from app.music.models.music import MusicRead
 from app.music.service.email_template import email_template
 
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-import ssl
+logger = logging.getLogger(__name__)
 
 
 class MailService:
     def __init__(self):
         self.from_email = settings.GOOGLE_APP_EMAIL
         self.google_app_password = settings.GOOGLE_APP_PASSWORD
+        logger.info(f"[MailService] Initialized with from_email={self.from_email} | password_set={'yes' if self.google_app_password else 'NO - MISSING'}")
 
     def send_mail(self, mail: MailRequest, music: MusicRead):
         recipients = mail.recipients
+        logger.info(f"[MailService.send_mail] Preparing email | to={recipients} | song={music.title}")
 
         subject = "Jukebox - Generated Music"
 
@@ -31,14 +35,18 @@ class MailService:
             )
 
         except Exception as e:
+            logger.exception(f"[MailService.send_mail] Exception: {e}")
             raise e
 
     def __send_mail_internally(self, recipients, subject, content, content_type="HTML"):
-        self.server = context = ssl.create_default_context()
+        logger.info(f"[MailService.__send_mail_internally] Connecting to smtp.gmail.com:587 | from={self.from_email}")
+        context = ssl.create_default_context()
         self.server = smtplib.SMTP("smtp.gmail.com", 587)
         self.server.ehlo()
         self.server.starttls(context=context)
+        logger.info("[MailService.__send_mail_internally] TLS started, logging in...")
         self.server.login(self.from_email, self.google_app_password)
+        logger.info("[MailService.__send_mail_internally] Login successful")
 
         # Create the email message
         msg = MIMEMultipart()
@@ -50,9 +58,9 @@ class MailService:
         try:
             self.server.sendmail(self.from_email, recipients, msg.as_string())
             self.server.quit()
-            print("Email sent successfully")
+            logger.info("[MailService.__send_mail_internally] Email sent successfully")
         except Exception as e:
-            print(f"Failed to send email: {e}")
+            logger.exception(f"[MailService.__send_mail_internally] Failed to send email: {e}")
             raise e
 
     def __create_mail_content(self, music: MusicRead):

@@ -1,11 +1,4 @@
 steps:
-  - id: set-env
-    name: gcr.io/cloud-builders/gcloud
-    entrypoint: bash
-    args:
-      - -c
-      - gcloud secrets versions access latest --secret=$_SERVICE --project=$PROJECT_ID > .env
-
   - id: build
     name: gcr.io/cloud-builders/docker
     args:
@@ -13,7 +6,7 @@ steps:
       - -t
       - europe-docker.pkg.dev/$PROJECT_ID/$_REPO/$_SERVICE
       - -f
-      - Dockerfile.prod
+      - Dockerfile
       - .
 
   - id: push
@@ -33,6 +26,7 @@ steps:
         --image europe-docker.pkg.dev/$PROJECT_ID/$_REPO/$_SERVICE \
         --allow-unauthenticated \
         --set-env-vars=PROJECT_ID=$PROJECT_ID \
+        --update-secrets=GOOGLE_APP_EMAIL=GOOGLE_APP_EMAIL:latest,GOOGLE_APP_PASSWORD=GOOGLE_APP_PASSWORD:latest \
         --region $_REGION \
         --add-cloudsql-instances $_PROJECT_ID:$_REGION:$_SERVICE-instance \
         --timeout 3600 \

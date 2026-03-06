@@ -126,8 +126,9 @@ class Settings(BaseSettings):
     MUSICGEN_URL: str = Field(default="", env="MUSICGEN_URL")
 
     # Email service (optional)
+    # Injected as env vars by Cloud Run native secrets (--update-secrets)
     GOOGLE_APP_EMAIL: str = Field(default="", env="GOOGLE_APP_EMAIL")
-    GOOGLE_APP_PASSWORD: str = Field(default_factory=lambda: get_secret("GOOGLE_APP_PASSWORD", required=False))
+    GOOGLE_APP_PASSWORD: str = Field(default="", env="GOOGLE_APP_PASSWORD")
 
     # Firestore
     FIRESTORE_DATABASE: str = Field(default="(default)", env="FIRESTORE_DATABASE")

@@ -1,9 +1,9 @@
-import google.generativeai as genai
 import requests
 import vertexai
 import replicate
 import io
 
+from vertexai.generative_models import GenerativeModel, GenerationConfig
 from vertexai.preview.vision_models import ImageGenerationModel
 
 from app.core.config import settings
@@ -24,14 +24,20 @@ class CoverGenerator(GenerativeAI):
         self._text_model = None
         self._img_model = None
 
+    def _init_vertexai(self):
+        """Initialize Vertex AI once for both text and image models."""
+        vertexai.init(
+            project=settings.GCLOUD_PROJECT_ID, location=settings.IMAGE_GENARATION_LOCATION
+        )
+
     @property
     def text_model(self):
-        # Lazy initialization to avoid authentication issues during app startup
+        # Lazy initialization using Vertex AI (uses GCP service account, no API key needed)
         if self._text_model is None:
-            genai.configure(api_key=settings.GEMINI_API_KEY)
-            self._text_model = genai.GenerativeModel(
+            self._init_vertexai()
+            self._text_model = GenerativeModel(
                 settings.GEMINI_MODEL,
-                generation_config=genai.GenerationConfig(
+                generation_config=GenerationConfig(
                     temperature=0,
                 ),
             )
@@ -41,9 +47,7 @@ class CoverGenerator(GenerativeAI):
     def img_model(self):
         # Lazy initialization to avoid authentication issues during app startup
         if self._img_model is None:
-            vertexai.init(
-                project=settings.GCLOUD_PROJECT_ID, location=settings.IMAGE_GENARATION_LOCATION
-            )
+            self._init_vertexai()
             self._img_model = ImageGenerationModel.from_pretrained(settings.IMAGEN_MODEL)
         return self._img_model
 
@@ -95,13 +99,20 @@ class MusicGenerator(GenerativeAI):
 
     async def generate(self, prompt: PromptMusic):
         try:
-            # Use Replicate MusicGen model
+            # Use Replicate MusicGen model with quality-optimized parameters
             output = self.client.run(
                 "meta/musicgen:671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb",
                 input={
                     "prompt": prompt.prompt,
                     "duration": prompt.duration,
-                    "model_version": "stereo-large",
+                    "model_version": "stereo-melody-large",
+                    "temperature": 1.0,
+                    "top_k": 250,
+                    "top_p": 0.0,
+                    "classifier_free_guidance": 7,
+                    "output_format": "wav",
+                    "normalization_strategy": "loudness",
+                    "seed": -1,
                 },
             )
 
@@ -124,12 +135,14 @@ class SettingsGenerator(GenerativeAI):
 
     @property
     def text_model(self):
-        # Lazy initialization to avoid authentication issues during app startup
+        # Lazy initialization using Vertex AI (uses GCP service account, no API key needed)
         if self._text_model is None:
-            genai.configure(api_key=settings.GEMINI_API_KEY)
-            self._text_model = genai.GenerativeModel(
+            vertexai.init(
+                project=settings.GCLOUD_PROJECT_ID, location=settings.IMAGE_GENARATION_LOCATION
+            )
+            self._text_model = GenerativeModel(
                 settings.GEMINI_MODEL,
-                generation_config=genai.GenerationConfig(
+                generation_config=GenerationConfig(
                     temperature=0,
                 ),
             )
