@@ -28,7 +28,7 @@ class AppConfig {
   /// Get default API URL based on environment
   static String _getDefaultApiUrl() {
     if (environment == 'prod') {
-      return 'https://jukebox-395380200712.europe-west1.run.app/api/';
+      return 'https://jukebox-api-btqp6b26qa-od.a.run.app/api/';
     } else {
       // Local development (Android emulator uses 10.0.2.2)
       return 'http://10.0.2.2:8000/api/';
