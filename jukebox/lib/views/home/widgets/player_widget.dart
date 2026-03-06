@@ -265,44 +265,55 @@ class _PlayerWidgetState extends State<PlayerWidget>
                                 ),
                               ),
                               const SizedBox(height: 20),
-                              Row(
-                                children: [
-                                  PlayerButton(
-                                    icon: Icons.skip_previous,
-                                    onPressed: () {
-                                      _playerCubit.previous();
-                                    },
-                                    size: 40,
-                                  ),
-                                  const SizedBox(width: 10),
-                                  _getPlayPauseButton(state),
-                                  const SizedBox(width: 10),
-                                  PlayerButton(
-                                    icon: Icons.skip_next,
-                                    onPressed: () {
-                                      _playerCubit.next();
-                                    },
-                                    size: 40,
-                                  ),
-                                  const SizedBox(width: 10),
-                                  CupertinoButton(
-                                    padding: EdgeInsets.zero,
-                                    onPressed: () {
-                                      if (_playerCubit.actifSong.value != null) {
-                                        showDialog(
-                                          context: context,
-                                          builder: (context) =>
-                                              const ShareEmailWidget(),
-                                        );
-                                      }
-                                    },
-                                    child: const Icon(
-                                      Icons.share,
-                                      color: Colors.black,
-                                      size: 28,
+                              SizedBox(
+                                width: 300,
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        PlayerButton(
+                                          icon: Icons.skip_previous,
+                                          onPressed: () {
+                                            _playerCubit.previous();
+                                          },
+                                          size: 40,
+                                        ),
+                                        const SizedBox(width: 10),
+                                        _getPlayPauseButton(state),
+                                        const SizedBox(width: 10),
+                                        PlayerButton(
+                                          icon: Icons.skip_next,
+                                          onPressed: () {
+                                            _playerCubit.next();
+                                          },
+                                          size: 40,
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                ],
+                                    Positioned(
+                                      right: 0,
+                                      child: CupertinoButton(
+                                        padding: EdgeInsets.zero,
+                                        onPressed: () {
+                                          if (_playerCubit.actifSong.value != null) {
+                                            showDialog(
+                                              context: context,
+                                              builder: (context) =>
+                                                  const ShareEmailWidget(),
+                                            );
+                                          }
+                                        },
+                                        child: const Icon(
+                                          Icons.share,
+                                          color: Colors.black,
+                                          size: 26,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
                           ),

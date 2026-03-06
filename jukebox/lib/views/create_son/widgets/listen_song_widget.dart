@@ -444,76 +444,81 @@ class _ShareEmailWidgetState extends State<ShareEmailWidget> {
         }
       },
       builder: (context, state) {
-        return AlertDialog(
+        return Dialog(
           backgroundColor: Colors.transparent,
           insetPadding: EdgeInsets.zero,
-          content: IntrinsicWidth(
-            child: IntrinsicHeight(
-              child: Container(
-                color: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  vertical: 50,
-                  horizontal: 100,
-                ),
-                // width: 500,
-                child: Column(
-                  children: [
-                    const Text(
-                      'Enter your email address',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 25,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      autofocus: true,
-                      controller: emailCtrl,
-                      decoration: InputDecoration(
-                        hintText: 'Email address',
-                        hintStyle: const TextStyle(
-                          color: Colors.black38,
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.viewInsetsOf(context).bottom,
+            ),
+            child: IntrinsicWidth(
+              child: IntrinsicHeight(
+                child: Container(
+                  color: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 50,
+                    horizontal: 100,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Enter your email address',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 25,
                         ),
-                        border: InputBorder.none,
-                        filled: true,
-                        fillColor: Colors.black.withOpacity(0.1),
                       ),
-                    ),
-                    const SizedBox(height: 15),
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      child: Container(
-                        color: const Color(0xffAD402B),
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        child: state is SendMailLoading
-                            ? const Center(
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 3,
-                                ),
-                              )
-                            : const Text(
-                                textAlign: TextAlign.center,
-                                'Share',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                ),
-                              ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        autofocus: true,
+                        controller: emailCtrl,
+                        decoration: InputDecoration(
+                          hintText: 'Email address',
+                          hintStyle: const TextStyle(
+                            color: Colors.black38,
+                          ),
+                          border: InputBorder.none,
+                          filled: true,
+                          fillColor: Colors.black.withOpacity(0.1),
+                        ),
                       ),
-                      onPressed: () {
-                        if (state is! SendMailLoading &&
-                            emailCtrl.text.isNotEmpty) {
-                          _songCubit.sendMail(
-                            _playerCubit.actifSong.value!.id,
-                            emailCtrl.text,
-                            _playerCubit.actifSong.value!.genre,
-                          );
-                        }
-                      },
-                    ),
-                  ],
+                      const SizedBox(height: 15),
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        child: Container(
+                          color: const Color(0xffAD402B),
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          child: state is SendMailLoading
+                              ? const Center(
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 3,
+                                  ),
+                                )
+                              : const Text(
+                                  textAlign: TextAlign.center,
+                                  'Share',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                        ),
+                        onPressed: () {
+                          if (state is! SendMailLoading &&
+                              emailCtrl.text.isNotEmpty) {
+                            _songCubit.sendMail(
+                              _playerCubit.actifSong.value!.id,
+                              emailCtrl.text,
+                              _playerCubit.actifSong.value!.genre,
+                            );
+                          }
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
