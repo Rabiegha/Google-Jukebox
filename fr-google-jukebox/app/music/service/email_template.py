@@ -1200,100 +1200,24 @@ email_template = """
                         <table
                           cellpadding="0"
                           cellspacing="0"
-                          align="left"
-                          class="es-left"
+                          align="center"
+                          class="es-center"
                           role="none"
                           style="
                             mso-table-lspace: 0pt;
                             mso-table-rspace: 0pt;
                             border-collapse: collapse;
                             border-spacing: 0px;
-                            float: left;
+                            margin: 0 auto;
                           "
                         >
                           <tr>
-                            <td
-                              align="left"
-                              class="es-m-p20b"
-                              style="padding: 0; margin: 0"
-                            >
+                            <td align="center" style="padding: 0; margin: 0">
                               <table
-                                cellspacing="0"
                                 width="100%"
                                 role="presentation"
                                 cellpadding="0"
-                                style="
-                                  mso-table-lspace: 0pt;
-                                  mso-table-rspace: 0pt;
-                                  border-collapse: collapse;
-                                  border-spacing: 0px;
-                                "
-                              >
-                                <tr
-                                  style="
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: right;
-                                  "
-                                >
-                                  <td
-                                    align="center"
-                                    style="padding: 0; margin: 0; font-size: 0"
-                                  >
-                                    <a
-                                      target="_blank"
-                                      href="https://www.devoteam.com/"
-                                      style="
-                                        mso-line-height-rule: exactly;
-                                        text-decoration: underline;
-                                        color: #2cb543;
-                                        font-size: 14px;
-                                      "
-                                      ><img
-                                        src="https://storage.googleapis.com/prompts_results/email_template_content/devoteam.png"
-                                        alt="devoteam_logo"
-                                        width="150"
-                                        class="img-9947"
-                                        style="
-                                          display: block;
-                                          font-size: 14px;
-                                          border: 0;
-                                          outline: none;
-                                          text-decoration: none;
-                                        "
-                                    /></a>
-                                  </td>
-                                </tr>
-                              </table>
-                            </td>
-                          </tr>
-                        </table>
-                        <!--[if mso]></td><td style="width:146px" valign="top"><![endif]-->
-                        <table
-                          align="left"
-                          cellpadding="0"
-                          cellspacing="0"
-                          class="es-left"
-                          role="none"
-                          style="
-                            mso-table-lspace: 0pt;
-                            mso-table-rspace: 0pt;
-                            border-collapse: collapse;
-                            border-spacing: 0px;
-                            float: left;
-                          "
-                        >
-                          <tr>
-                            <td
-                              align="left"
-                              class="es-m-p20b"
-                              style="padding: 0; margin: 0; width: 146px"
-                            >
-                              <table
-                                cellpadding="0"
                                 cellspacing="0"
-                                width="100%"
-                                role="presentation"
                                 style="
                                   mso-table-lspace: 0pt;
                                   mso-table-rspace: 0pt;
@@ -1302,71 +1226,7 @@ email_template = """
                                 "
                               >
                                 <tr>
-                                  <td
-                                    align="center"
-                                    class="es-m-p0t"
-                                    style="padding: 0; margin: 0"
-                                  >
-                                    <h3
-                                      class="es-m-txt-c"
-                                      style="
-                                        margin: 0;
-                                        font-family: arial, 'helvetica neue',
-                                          helvetica, sans-serif;
-                                        mso-line-height-rule: exactly;
-                                        letter-spacing: 0;
-                                        font-size: 20px;
-                                        font-style: normal;
-                                        font-weight: normal;
-                                        line-height: 24px;
-                                        color: #333333;
-                                      "
-                                    >
-                                      ❤️
-                                    </h3>
-                                  </td>
-                                </tr>
-                              </table>
-                            </td>
-                          </tr>
-                        </table>
-                        <!--[if mso]></td><td style="width:10px"></td><td style="width:237px" valign="top"><![endif]-->
-                        <table
-                          cellpadding="0"
-                          cellspacing="0"
-                          align="right"
-                          class="es-right"
-                          role="none"
-                          style="
-                            mso-table-lspace: 0pt;
-                            mso-table-rspace: 0pt;
-                            border-collapse: collapse;
-                            border-spacing: 0px;
-                            float: right;
-                          "
-                        >
-                          <tr>
-                            <td align="left" style="padding: 0; margin: 0">
-                              <table
-                                width="100%"
-                                role="presentation"
-                                cellpadding="0"
-                                cellspacing="0"
-                                style="
-                                  mso-table-lspace: 0pt;
-                                  mso-table-rspace: 0pt;
-                                  border-collapse: collapse;
-                                  border-spacing: 0px;
-                                "
-                              >
-                                <tr
-                                  style="
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: left;
-                                  "
-                                >
-                                  <td>
+                                  <td align="center" style="padding: 0; margin: 0">
                                     <a
                                       target="_blank"
                                       href="https://cloud.google.com/"
@@ -1377,7 +1237,7 @@ email_template = """
                                         font-size: 14px;
                                       "
                                       ><img
-                                        src="https://storage.googleapis.com/prompts_results/email_template_content/google_cloud.png"
+                                        src="https://storage.googleapis.com/my-jukebox-app-prompts-results/partner-google-cloud.png"
                                         alt="google_logo"
                                         width="150"
                                         class="img-9683"
