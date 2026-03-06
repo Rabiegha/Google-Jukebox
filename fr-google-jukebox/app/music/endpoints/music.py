@@ -1,9 +1,6 @@
 from io import BytesIO
 import logging
-import math
-import struct
 import time
-import wave
 from typing import Annotated
 import uuid
 from datetime import datetime
@@ -203,30 +200,8 @@ async def generate_music(
     buffer = BytesIO()
 
     try:
-        try:
-            async for chunk in music_generator.generate(generation_prompt):
-                buffer.write(chunk)
-        except Exception as ai_err:
-            # TODO: Re-enable when Replicate credits are available
-            logging.warning(f"AI music generation failed (using test tone): {ai_err}")
-            buffer = BytesIO()
-            # Generate a simple test WAV tone
-            sample_rate = 44100
-            duration_secs = generation_prompt.duration
-            frequency = 440.0  # A4 note
-            num_samples = sample_rate * duration_secs
-            wav_buffer = BytesIO()
-            with wave.open(wav_buffer, 'w') as wav_file:
-                wav_file.setnchannels(1)
-                wav_file.setsampwidth(2)
-                wav_file.setframerate(sample_rate)
-                for i in range(num_samples):
-                    # Simple sine wave with fade in/out
-                    t = i / sample_rate
-                    fade = min(1.0, i / (sample_rate * 0.1), (num_samples - i) / (sample_rate * 0.1))
-                    value = int(16000 * fade * math.sin(2 * math.pi * frequency * t))
-                    wav_file.writeframes(struct.pack('<h', value))
-            buffer = wav_buffer
+        async for chunk in music_generator.generate(generation_prompt):
+            buffer.write(chunk)
 
         # Upload the WAV to GCS
         buffer.seek(0)
