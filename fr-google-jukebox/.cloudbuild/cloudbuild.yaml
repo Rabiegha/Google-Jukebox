@@ -1,6 +1,7 @@
 steps:
   - id: build
     name: gcr.io/cloud-builders/docker
+    dir: fr-google-jukebox
     args:
       - build
       - -t
