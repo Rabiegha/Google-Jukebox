@@ -1,4 +1,12 @@
 steps:
+  - id: debug
+    name: gcr.io/cloud-builders/gcloud
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        echo "=== WORKSPACE CONTENT ===" && ls /workspace/ && echo "=== SUB DIRS ===" && ls /workspace/fr-google-jukebox/ 2>/dev/null || echo "fr-google-jukebox NOT FOUND"
+
   - id: build
     name: gcr.io/cloud-builders/docker
     entrypoint: bash
