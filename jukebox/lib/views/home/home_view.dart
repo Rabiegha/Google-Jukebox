@@ -29,6 +29,7 @@ class _HomeViewState extends State<HomeView> {
 
     return Scaffold(
       key: _scaffoldKey,
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           Container(
@@ -64,14 +65,6 @@ class _HomeViewState extends State<HomeView> {
             child: Image.asset(
               'assets/images/gemini_logo.png',
               width: 90,
-            ),
-          ),
-          Positioned(
-            right: 130,
-            top: 50,
-            child: Image.asset(
-              'assets/images/digital_lab.png',
-              width: 150,
             ),
           ),
         ],

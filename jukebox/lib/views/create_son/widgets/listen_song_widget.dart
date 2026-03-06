@@ -444,26 +444,22 @@ class _ShareEmailWidgetState extends State<ShareEmailWidget> {
         }
       },
       builder: (context, state) {
-        return Dialog(
+        return AlertDialog(
           backgroundColor: Colors.transparent,
           insetPadding: EdgeInsets.zero,
-          child: Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.viewInsetsOf(context).bottom,
-            ),
-            child: IntrinsicWidth(
-              child: IntrinsicHeight(
-                child: Container(
-                  color: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 50,
-                    horizontal: 100,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'Enter your email address',
+          content: IntrinsicWidth(
+            child: IntrinsicHeight(
+              child: Container(
+                color: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 50,
+                  horizontal: 100,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Enter your email address',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 25,
@@ -522,8 +518,7 @@ class _ShareEmailWidgetState extends State<ShareEmailWidget> {
                 ),
               ),
             ),
-          ),
-        );
+          );
       },
     );
   }
