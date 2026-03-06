@@ -14,8 +14,8 @@ logger = logging.getLogger(__name__)
 
 class MailService:
     def __init__(self):
-        self.from_email = settings.GOOGLE_APP_EMAIL
-        self.google_app_password = settings.GOOGLE_APP_PASSWORD
+        self.from_email = settings.GOOGLE_APP_EMAIL.strip()
+        self.google_app_password = settings.GOOGLE_APP_PASSWORD.strip().replace('\xa0', '').replace(' ', '')
         logger.info(f"[MailService] Initialized with from_email={self.from_email} | password_set={'yes' if self.google_app_password else 'NO - MISSING'}")
 
     def send_mail(self, mail: MailRequest, music: MusicRead):
