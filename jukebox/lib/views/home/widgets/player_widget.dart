@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:jukebox/blocs/player_cubit/player_cubit.dart';
@@ -24,10 +25,7 @@ class _PlayerWidgetState extends State<PlayerWidget>
   late AnimationController _controller;
 
   _getCoverImage(PlayerState state) {
-    if ((state is AudioPlayerPlaying ||
-            state is AudioPlayerPaused ||
-            state is AudioPlayerEnd) &&
-        _playerCubit.actifSong.value != null) {
+    if (_playerCubit.actifSong.value != null) {
       final cover = _playerCubit.actifSong.value!.cover;
       if (cover != 'default_cover' && cover.isNotEmpty) {
         return cover;
@@ -44,30 +42,23 @@ class _PlayerWidgetState extends State<PlayerWidget>
   }
 
   _getSongTitle(PlayerState state) {
-    if (state is AudioPlayerPlaying ||
-        state is AudioPlayerPaused ||
-        state is AudioPlayerEnd) {
+    if (_playerCubit.actifSong.value != null) {
       return _playerCubit.actifSong.value!.title;
     }
     return "";
   }
 
   _getSongCreator(PlayerState state) {
-    if (state is AudioPlayerPlaying ||
-        state is AudioPlayerPaused ||
-        state is AudioPlayerEnd) {
+    if (_playerCubit.actifSong.value != null) {
       return _playerCubit.actifSong.value!.creator;
     }
     return "";
   }
 
   _getSongGenre(PlayerState state) {
-    if (state is AudioPlayerPlaying ||
-        state is AudioPlayerPaused ||
-        state is AudioPlayerEnd) {
+    if (_playerCubit.actifSong.value != null) {
       return _playerCubit.actifSong.value!.genre;
     }
-
     return "";
   }
 
@@ -244,6 +235,7 @@ class _PlayerWidgetState extends State<PlayerWidget>
                                             snapshot.data ?? Duration.zero,
                                         total:
                                             _playerCubit.audioPlayer.duration ??
+                                                _playerCubit.actifSong.value?.duration ??
                                                 Duration.zero,
                                         onSeek: (duration) async {
                                           await _playerCubit.audioPlayer
@@ -291,6 +283,24 @@ class _PlayerWidgetState extends State<PlayerWidget>
                                       _playerCubit.next();
                                     },
                                     size: 40,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  CupertinoButton(
+                                    padding: EdgeInsets.zero,
+                                    onPressed: () {
+                                      if (_playerCubit.actifSong.value != null) {
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) =>
+                                              const ShareEmailWidget(),
+                                        );
+                                      }
+                                    },
+                                    child: const Icon(
+                                      Icons.share,
+                                      color: Colors.black,
+                                      size: 28,
+                                    ),
                                   ),
                                 ],
                               ),

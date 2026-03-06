@@ -10,11 +10,13 @@ import 'package:lottie/lottie.dart';
 import 'listen_song_widget.dart';
 
 OverlayEntry listenMusicPopup(SongModel song) {
-  return OverlayEntry(
+  late OverlayEntry entry;
+  entry = OverlayEntry(
     builder: (homeContext) => Positioned(
       bottom: 20,
-      right: 20,
+      left: 20,
       child: Material(
+        color: Colors.transparent,
         child: IntrinsicWidth(
           child: Container(
             width: 310,
@@ -38,67 +40,83 @@ OverlayEntry listenMusicPopup(SongModel song) {
                 ),
               ],
             ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Stack(
               children: [
-                Lottie.asset(
-                  'assets/images/dance.json',
-                  // width: 100,
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Your creation is ready 🤩',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 5),
-                      CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        onPressed: () async {
-                          // Wait for playlist to be fully loaded before playing
-                          await homeContext.read<SongCubit>().getSongsByGenre(
-                                song.genre,
-                                homeContext.read<CategoryCubit>(),
-                                homeContext,
-                                activeSong: false,
-                              );
-
-                          await homeContext.read<PlayerCubit>().play(song);
-
-                          Navigator.of(homeContext)
-                              .popUntil((route) => route.isFirst);
-
-                          showDialog(
-                            context: homeContext,
-                            builder: (homeContext) => ListenSongWidget(
-                              song: song,
-                            ),
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 15,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.green,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: const Text(
-                            'Listen',
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Lottie.asset(
+                      'assets/images/dance.json',
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Your creation is ready 🤩',
                             style: TextStyle(
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
                             ),
                           ),
-                        ),
+                          const SizedBox(height: 5),
+                          CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            onPressed: () async {
+                              entry.remove();
+
+                              await homeContext.read<SongCubit>().getSongsByGenre(
+                                    song.genre,
+                                    homeContext.read<CategoryCubit>(),
+                                    homeContext,
+                                    activeSong: false,
+                                  );
+
+                              await homeContext.read<PlayerCubit>().play(song);
+
+                              Navigator.of(homeContext)
+                                  .popUntil((route) => route.isFirst);
+
+                              showDialog(
+                                context: homeContext,
+                                builder: (homeContext) => ListenSongWidget(
+                                  song: song,
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 15,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.green,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                'Listen',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
+                  ],
+                ),
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: GestureDetector(
+                    onTap: () => entry.remove(),
+                    child: const Icon(
+                      Icons.close,
+                      size: 18,
+                      color: Colors.black54,
+                    ),
                   ),
                 ),
               ],
@@ -108,4 +126,5 @@ OverlayEntry listenMusicPopup(SongModel song) {
       ),
     ),
   );
+  return entry;
 }

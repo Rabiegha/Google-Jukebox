@@ -11,6 +11,7 @@ import 'package:jukebox/blocs/category_cubit/category_cubit.dart';
 import 'package:jukebox/blocs/player_cubit/player_cubit.dart';
 import 'package:jukebox/models/song_model.dart';
 import 'package:jukebox/repositories/song_repository.dart';
+import 'package:jukebox/config/app_config.dart';
 import 'package:jukebox/views/create_son/widgets/creating_music_overlay_entry.dart';
 import 'package:jukebox/views/create_son/widgets/error_music_overlay_entry.dart';
 import 'package:jukebox/views/create_son/widgets/listen_music_overlay_entry.dart';
@@ -31,9 +32,7 @@ class SongCubit extends Cubit<SongState> {
   }) async {
     emit(SongGetByGenreLoading());
     try {
-      // Stop any currently playing audio when switching categories
       final playerCubit = context.read<PlayerCubit>();
-      await playerCubit.stop();
 
       final List<SongModel> songs = [];
       final List<String> playList = [];
@@ -49,24 +48,12 @@ class SongCubit extends Cubit<SongState> {
         }
       }
 
-      if (songs.isEmpty) {
-        playerCubit.playlist = [];
-        playerCubit.songList = [];
-        playerCubit.actifSong.value = null;
-        emit(SongGetByGenreSuccess(songs: songs, genre: genre));
-        return;
-      }
+      // Always update the displayed playlist data
+      playerCubit.currentGenrePlaylist = playList;
+      playerCubit.currentGenreSongList = songs;
 
-      final audioSource = ConcatenatingAudioSource(
-        children:
-            playList.map((item) => AudioSource.uri(Uri.parse(item))).toList(),
-      );
-
-      context.read<PlayerCubit>().audioPlayer.setAudioSource(audioSource);
-      playerCubit.playlist = playList;
-      playerCubit.songList = songs;
-
-      if (activeSong) {
+      // Only update actifSong if nothing is selected yet
+      if (playerCubit.actifSong.value == null && songs.isNotEmpty && activeSong) {
         playerCubit.actifSong.value = songs[0];
       }
 
@@ -75,6 +62,22 @@ class SongCubit extends Cubit<SongState> {
       inspect(e);
       emit(SongGetByGenreSuccess(songs: [], genre: genre));
     }
+  }
+
+  /// Refresh the song list UI from cache without touching the player
+  void refreshCurrentList(String genre, CategoryCubit categoryCubit) {
+    final List<SongModel> songs = [];
+    final data = categoryCubit.songListData[genre];
+
+    if (data != null) {
+      for (final songData in data) {
+        final song = SongModel.fromMap(songData);
+        if (song.audio == 'default_audio' || song.audio.isEmpty) continue;
+        songs.add(song);
+      }
+    }
+
+    emit(SongGetByGenreSuccess(songs: songs, genre: genre));
   }
 
   getSettings(String song) async {
@@ -86,10 +89,13 @@ class SongCubit extends Cubit<SongState> {
 
   sendMail(String songId, String mail, String genre) async {
     try {
+      log('[sendMail] Sending mail to: $mail | songId: $songId | genre: $genre');
       emit(SendMailLoading());
       await _songRepository.sendSongByMail(songId, mail, genre);
+      log('[sendMail] SUCCESS');
       emit(SendMailSuccess());
-    } catch (_) {
+    } catch (e, stack) {
+      log('[sendMail] ERROR: $e', error: e, stackTrace: stack);
       emit(SendMailError());
     }
   }
@@ -117,6 +123,7 @@ class SongCubit extends Cubit<SongState> {
           'settings': settings,
           'description': description,
           'pseudo': pseudo,
+          'apiBaseUrl': AppConfig.apiBaseUrl,
         },
       );
 
@@ -136,14 +143,24 @@ class SongCubit extends Cubit<SongState> {
         return;
       }
 
-      homeContext.read<CategoryCubit>().getCategories(loading: false);
+      // Refresh the specific genre's data from the server
+      final categoryCubit = homeContext.read<CategoryCubit>();
+      await categoryCubit.refreshGenreSongs(genre);
+
+      // Switch to the correct category and load its songs
+      categoryCubit.selectedCategory.value = genre;
+      await homeContext.read<SongCubit>().getSongsByGenre(
+        genre,
+        categoryCubit,
+        homeContext,
+      );
 
       overlayEntry.remove();
       overlayEntry = listenMusicPopup(SongModel.fromMap(res));
       Overlay.of(homeContext).insert(overlayEntry);
 
       await Future.delayed(const Duration(seconds: 20));
-      overlayEntry.remove();
+      if (overlayEntry.mounted) overlayEntry.remove();
     } catch (e) {
       inspect(e);
     }
@@ -159,19 +176,34 @@ void createSong(
   final pseudo = params['pseudo'];
   final settings = params['settings'];
 
-  String prompt = """
-    Generate music with this caracteristic:
-    genre: $genre,
-    instruments: $instruments,
-    BPM: ${settings['bpm']},
-    Bitrate: ${settings['bitrate']},
-    Sample range: ${settings['sample_range']}.
-  """;
+  // Build a natural-language prompt optimized for MusicGen
+  // Only musically meaningful params (BPM, time signature, instruments, genre)
+  // Bitrate/sample_range are encoding params that MusicGen doesn't understand
+  String prompt = "A $genre track";
+
+  if (description != null && description.toString().trim().isNotEmpty) {
+    prompt += ", ${description.toString().trim()}";
+  }
+
+  prompt += ", featuring $instruments";
+
+  final bpm = settings['bpm'];
+  if (bpm != null) {
+    prompt += ", at ${bpm.toInt()} BPM";
+  }
+
+  final timeSig = settings['time_signature'];
+  if (timeSig != null && timeSig.toString().isNotEmpty) {
+    prompt += " in $timeSig time";
+  }
+
+  prompt += ", high quality, professional studio production, crystal clear mix, mastered audio";
 
   try {
+    final apiBaseUrl = params['apiBaseUrl'] as String;
     final dio = Dio(
       BaseOptions(
-        baseUrl: 'https://jukebox-395380200712.europe-west1.run.app/api/',
+        baseUrl: apiBaseUrl,
       ),
     );
 
@@ -182,7 +214,7 @@ void createSong(
         "prompt": prompt,
         "title": params['title'],
         "creator": pseudo,
-        "duration": 30
+        "duration": 20
       }),
     );
 
@@ -195,7 +227,7 @@ void createSong(
           'uuid': response.data['id'],
           'title': params['title'],
           'prompt': prompt,
-          'duration': 30,
+          'duration': 20,
           "creator": pseudo,
           'genre': params['genre'],
         }),
@@ -212,7 +244,7 @@ void createSong(
         'uuid': response.data['id'],
         'title': params['title'],
         'prompt': prompt,
-        'duration': 30,
+        'duration': 20,
         'genre': params['genre'],
         "creator": pseudo,
       },
@@ -225,7 +257,7 @@ void createSong(
       'creator': songResponse.data['creator'],
       'id': songResponse.data['id'],
       'cover': cover,
-      'duration': 30,
+      'duration': 20,
     });
   } catch (e) {
     inspect(e);

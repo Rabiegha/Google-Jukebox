@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 import 'dart:ui';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
@@ -27,6 +28,8 @@ class ListenSongWidget extends StatefulWidget {
 class _ListenSongWidgetState extends State<ListenSongWidget> {
   late final PlayerCubit _playerCubit;
   late TextEditingController emailCtrl;
+  StreamSubscription? _indexSubscription;
+  int? _initialIndex;
 
   static const _defaultCover =
       'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/1200px-Placeholder_view_vector.svg.png';
@@ -41,7 +44,21 @@ class _ListenSongWidgetState extends State<ListenSongWidget> {
   void initState() {
     _playerCubit = context.read<PlayerCubit>();
     emailCtrl = TextEditingController();
+    _initialIndex = _playerCubit.audioPlayer.currentIndex;
+    _indexSubscription =
+        _playerCubit.audioPlayer.currentIndexStream.listen((index) {
+      if (index != null && index != _initialIndex) {
+        _playerCubit.endAudio();
+      }
+    });
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _indexSubscription?.cancel();
+    emailCtrl.dispose();
+    super.dispose();
   }
 
   Widget _getPlayPauseButton(PlayerState state) {
