@@ -14,7 +14,7 @@ OverlayEntry listenMusicPopup(SongModel song) {
   entry = OverlayEntry(
     builder: (homeContext) => Positioned(
       bottom: 20,
-      left: 20,
+      right: 20,
       child: Material(
         color: Colors.transparent,
         child: IntrinsicWidth(
@@ -63,8 +63,6 @@ OverlayEntry listenMusicPopup(SongModel song) {
                           CupertinoButton(
                             padding: EdgeInsets.zero,
                             onPressed: () async {
-                              entry.remove();
-
                               await homeContext.read<SongCubit>().getSongsByGenre(
                                     song.genre,
                                     homeContext.read<CategoryCubit>(),
@@ -83,6 +81,8 @@ OverlayEntry listenMusicPopup(SongModel song) {
                                   song: song,
                                 ),
                               );
+
+                              entry.remove();
                             },
                             child: Container(
                               padding: const EdgeInsets.symmetric(
