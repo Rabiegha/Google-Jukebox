@@ -17,7 +17,7 @@ class CategoriesList extends StatefulWidget {
 class _CategoriesListState extends State<CategoriesList> {
   late final CategoryCubit _categoryCubit;
   late final SongCubit _songCubit;
-  late final ValueNotifier<String?> _selectedCategory;
+  bool _initialLoadDone = false;
 
   @override
   void initState() {
@@ -25,7 +25,6 @@ class _CategoriesListState extends State<CategoriesList> {
     _categoryCubit = context.read<CategoryCubit>();
     _songCubit = context.read<SongCubit>();
     _categoryCubit.getCategories();
-    _selectedCategory = ValueNotifier(null);
   }
 
   @override
@@ -48,6 +47,20 @@ class _CategoriesListState extends State<CategoriesList> {
           );
         }
         if (state is CategoryGetSuccess) {
+          // Pre-select first category and load its songs on initial load
+          if (!_initialLoadDone && state.categories.isNotEmpty) {
+            _initialLoadDone = true;
+            final firstCategory = state.categories.first.id;
+            _categoryCubit.selectedCategory.value = firstCategory;
+            // Use addPostFrameCallback to avoid calling setState during build
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _songCubit.getSongsByGenre(
+                firstCategory,
+                _categoryCubit,
+                context,
+              );
+            });
+          }
           return Container(
             decoration: const BoxDecoration(
               border: Border(
@@ -69,7 +82,7 @@ class _CategoriesListState extends State<CategoriesList> {
                   ...state.categories.map(
                     (category) => GestureDetector(
                       onTap: () {
-                        _selectedCategory.value = category.id;
+                        _categoryCubit.selectedCategory.value = category.id;
                         _songCubit.getSongsByGenre(
                           category.id,
                           _categoryCubit,
@@ -81,7 +94,7 @@ class _CategoriesListState extends State<CategoriesList> {
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: ValueListenableBuilder(
-                            valueListenable: _selectedCategory,
+                            valueListenable: _categoryCubit.selectedCategory,
                             builder: (context, value, _) {
                               return Stack(
                                 children: [
@@ -95,7 +108,7 @@ class _CategoriesListState extends State<CategoriesList> {
                                       ),
                                       border: Border.all(
                                         width: 5,
-                                        color: _selectedCategory.value ==
+                                        color: _categoryCubit.selectedCategory.value ==
                                                 category.id
                                             ? const Color(0xFFF6AC71)
                                             : Colors.white,

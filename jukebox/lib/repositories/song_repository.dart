@@ -40,7 +40,8 @@ class SongRepository {
     String genre,
   ) async {
     try {
-      await _dio.post(
+      log('[SongRepository.sendSongByMail] POST mail | id: $id | recipient: $recipient | genre: $genre');
+      final response = await _dio.post(
         'mail',
         data: jsonEncode(
           {
@@ -50,8 +51,13 @@ class SongRepository {
           },
         ),
       );
+      log('[SongRepository.sendSongByMail] Response status: ${response.statusCode}');
+    } on DioException catch (e) {
+      log('[SongRepository.sendSongByMail] DioException: ${e.message} | status: ${e.response?.statusCode} | data: ${e.response?.data}');
+      throw Exception('sendSongByMail failed: ${e.message}');
     } catch (e) {
-      throw Exception();
+      log('[SongRepository.sendSongByMail] Unexpected error: $e');
+      throw Exception('sendSongByMail unexpected error: $e');
     }
   }
 

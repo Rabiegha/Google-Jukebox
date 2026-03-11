@@ -42,3 +42,9 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // Force compatible androidx versions to avoid resource conflicts
+    implementation "androidx.core:core:1.15.0"
+    implementation "androidx.media:media:1.7.0"
+}

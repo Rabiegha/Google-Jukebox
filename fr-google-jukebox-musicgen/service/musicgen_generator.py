@@ -76,15 +76,20 @@ class MusigGenGenerator:
             self.model, device=self.model.device, play_steps=play_steps
         )
 
+        set_seed(seed)
+
         generation_kwargs = dict(
             **inputs.to(self.model.device),
             streamer=streamer,
             max_new_tokens=max_new_tokens,
+            do_sample=True,
+            guidance_scale=5.0,
+            temperature=1.0,
+            top_k=250,
+            top_p=0.0,
         )
         thread = Thread(target=self.model.generate, kwargs=generation_kwargs)
         thread.start()
-
-        set_seed(seed)
 
 
         bitsPerSample = 16
@@ -100,11 +105,13 @@ class MusigGenGenerator:
             print(
                 f"Sample of length: {round(new_audio.shape[0] / self.sampling_rate, 2)} seconds"
             )
+            # Clip to [-1.0, 1.0] to prevent int16 overflow, then scale to 16-bit PCM range
+            audio_int16 = np.int16(np.clip(new_audio, -1.0, 1.0) * 32767)
             if first_run:
-                data = wav_header + np.int16(new_audio * self.sampling_rate).tobytes()
+                data = wav_header + audio_int16.tobytes()
                 first_run = False
             else:
-                data = np.int16(new_audio * self.sampling_rate).tobytes()
+                data = audio_int16.tobytes()
             binary_chunks_to_write.append(data)
             yield data
 

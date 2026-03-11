@@ -8,8 +8,10 @@ part 'player_state.dart';
 class PlayerCubit extends Cubit<PlayerState> {
   PlayerCubit() : super(AudioPlayerInitial());
 
-  List<String> playlist = []; // List of audio URLs or file paths
-  List<SongModel> songList = [];
+  List<String> playlist = []; // Currently loaded audio source URLs
+  List<SongModel> songList = []; // Currently loaded audio source songs
+  List<String> currentGenrePlaylist = []; // Songs of the displayed genre
+  List<SongModel> currentGenreSongList = []; // Song models of displayed genre
   int _currentIndex = 0;
 
   final ValueNotifier<SongModel?> actifSong = ValueNotifier(null);
@@ -18,21 +20,38 @@ class PlayerCubit extends Cubit<PlayerState> {
 
   Future<void> play(SongModel song) async {
     try {
-      _currentIndex = playlist.indexWhere((item) => item == song.audio);
-
-      if (_currentIndex < 0) {
-        // Song not in current playlist — play it directly by URL
+      // Check if the song is in the current genre playlist
+      // If so, load that genre's playlist as the audio source
+      final genreIndex = currentGenrePlaylist.indexWhere((item) => item == song.audio);
+      
+      if (genreIndex >= 0) {
+        // Song is in the currently displayed genre — load its playlist
+        if (playlist != currentGenrePlaylist || playlist.isEmpty) {
+          // Need to switch audio source to the displayed genre
+          final newSource = ConcatenatingAudioSource(
+            children: currentGenrePlaylist
+                .map((item) => AudioSource.uri(Uri.parse(item)))
+                .toList(),
+          );
+          await audioPlayer.setAudioSource(newSource, initialIndex: genreIndex);
+          playlist = List.from(currentGenrePlaylist);
+          songList = List.from(currentGenreSongList);
+        } else {
+          // Same playlist, just seek to the right index
+          await audioPlayer.seek(Duration.zero, index: genreIndex);
+        }
+        _currentIndex = genreIndex;
+      } else {
+        // Song not in current genre playlist — play directly by URL
         await audioPlayer.setUrl(song.audio);
         _currentIndex = 0;
-      } else {
-        audioPlayer.seek(Duration.zero, index: _currentIndex);
       }
 
       actifSong.value = song;
       audioPlayer.play();
       emit(AudioPlayerPlaying());
     } catch (e) {
-      print('audio url error');
+      print('audio url error: $e');
     }
   }
 

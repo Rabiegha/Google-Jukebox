@@ -10,9 +10,11 @@ class Settings extends StatefulWidget {
   const Settings({
     super.key,
     required this.settings,
+    required this.songCubit,
   });
 
   final ValueNotifier<Map<String, dynamic>> settings;
+  final SongCubit songCubit;
 
   @override
   State<Settings> createState() => _SettingsState();
@@ -20,13 +22,13 @@ class Settings extends StatefulWidget {
 
 class _SettingsState extends State<Settings> {
   late final TextEditingController songCtrl;
-  late final SongCubit _songCubit;
+
+  SongCubit get _songCubit => widget.songCubit;
 
   @override
   void initState() {
     super.initState();
     songCtrl = TextEditingController();
-    _songCubit = SongCubit();
   }
 
   @override

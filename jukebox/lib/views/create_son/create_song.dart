@@ -131,7 +131,7 @@ class _CreateSonWidgetState extends State<CreateSonWidget> {
                     const SectionTitle(title: 'Choose your music style'),
                     MusicStyleWidget(selectedMusicStyle: selectedMusicStyle),
                     const SizedBox(height: 40),
-                    Settings(settings: settings),
+                    Settings(settings: settings, songCubit: _songCubit),
                     const SizedBox(height: 40),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
